@@ -1,0 +1,34 @@
+name: Build PC game
+on:
+  push:
+    paths:
+      - '25.11.2026/**'
+      - '.github/workflows/build-pc.yml'
+  pull_request:
+    paths:
+      - '25.11.2026/**'
+      - '.github/workflows/build-pc.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build standalone EXE
+        run: >-
+          dotnet publish 25.11.2026/MemoryGame.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None -p:DebugSymbols=false
+          -o artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MemoryGame-Windows-x64
+          path: artifacts/MemoryGame.exe
+          if-no-files-found: error
+          retention-days: 30
